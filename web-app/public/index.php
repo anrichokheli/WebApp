@@ -43,6 +43,9 @@
         include(phpPath . "view.php");
         exit;
     }
+    if(isset($_GET["viewstring"]))    {
+        include(phpPath . "viewstring.php");
+    }
     if(!empty($_GET["download"])){
         include(phpPath . "download.php");
     }

@@ -13,6 +13,7 @@ var longitude;
 var altitude;
 var accuracy;
 var altitudeAccuracy;
+var locationTime;
 var locationDiv;
 try{
     locationDiv = document.getElementById("location");
@@ -295,8 +296,9 @@ function afterLocation(position)  {
     altitude = position.coords.altitude;
     accuracy = position.coords.accuracy;
     altitudeAccuracy = position.coords.altitudeAccuracy;
+    locationTime = position.timestamp;
     if(locationUploadArray.length > 0){
-        var coordinatesArray = [latitude, longitude, altitude, accuracy, altitudeAccuracy];
+        var coordinatesArray = [latitude, longitude, altitude, accuracy, altitudeAccuracy, locationTime];
         for(var key in locationUploadArray){
             var element;
             try{
@@ -318,7 +320,7 @@ function afterLocation(position)  {
         showLocation(altitudeData, altitude);
         showLocation(accuracyData, accuracy);
         showLocation(altitudeAccuracyData, altitudeAccuracy);
-        showLocation(locationTimeData, getDateTime(position.timestamp) + " (" + position.timestamp + ")");
+        showLocation(locationTimeData, getDateTime(locationTime) + " (" + locationTime + ")");
     }catch(e){}
     try{
         localStorage.setItem("locationallowed", "true");
@@ -563,7 +565,7 @@ function getLocationString(data){
     }
 }
 function uploadLocation(n, key, element, automaticLocation, coordinates)   {
-    uploadString(n, key, "&latitude="+encodeURIComponent(coordinates[0])+"&longitude="+encodeURIComponent(coordinates[1])+"&altitude="+encodeURIComponent(coordinates[2])+"&accuracy="+encodeURIComponent(coordinates[3])+"&altitudeAccuracy="+encodeURIComponent(coordinates[4]), true, automaticLocation, getLocationString(coordinates[0]) + ", " + getLocationString(coordinates[1]) + "; " + getLocationString(coordinates[2]) + "; " + getLocationString(coordinates[3]) + "; " + getLocationString(coordinates[4]), element);
+    uploadString(n, key, "&latitude="+encodeURIComponent(coordinates[0])+"&longitude="+encodeURIComponent(coordinates[1])+"&altitude="+encodeURIComponent(coordinates[2])+"&accuracy="+encodeURIComponent(coordinates[3])+"&altitudeAccuracy="+encodeURIComponent(coordinates[4])+"&location_time="+encodeURIComponent(coordinates[5]), true, automaticLocation, getLocationString(coordinates[0]) + ", " + getLocationString(coordinates[1]) + "; " + getLocationString(coordinates[2]) + "; " + getLocationString(coordinates[3]) + "; " + getLocationString(coordinates[4]) + "; " + getLocationString(coordinates[5]), element);
 }
 function uploadDescription(n, key, descriptionValue, input, button, element)    {
     uploadString(n, key, "&description="+encodeURIComponent(descriptionValue), false, null, descriptionValue, element, input, button);
@@ -1073,7 +1075,7 @@ function uploadLocationFunc(currentUploadID, automaticLocation, statusDiv, statu
             key = n_key[currentUploadID][2];
         }catch(e){}
         if(!coordinates){
-            coordinates = [latitude, longitude, altitude, accuracy, altitudeAccuracy];
+            coordinates = [latitude, longitude, altitude, accuracy, altitudeAccuracy, locationTime];
         }
         if(n && id && key){
             uploadLocation(id, key, document.getElementById('q'+n), automaticLocation, coordinates);
@@ -2499,6 +2501,7 @@ try{
         var fileInput = document.createElement("input");
         fileInput.type = "file";
         fileInput.accept = "image/*,video/*";
+        fileInput.multiple = "1";
         fileInput.id = 'f'+i;
         fileInput.oninput = function(){
             var i = this.id.substring(1);

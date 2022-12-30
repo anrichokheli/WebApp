@@ -106,7 +106,7 @@
         right: 0;
     }
     #statusBigBox{
-        height: calc(100vh - 124px);
+        height: calc(100% - 124px);
     }
     #phototakenicon{
         bottom: 111px;
@@ -116,6 +116,10 @@
     }
     #microphone{
         top: 64px;
+        left: 0;
+    }
+    #fullscreen{
+        top: 128px;
         left: 0;
     }
 }
@@ -134,7 +138,7 @@
         left: 0;
     }
     #statusBigBox{
-        height: calc(100vh - 48px);
+        height: calc(100% - 48px);
     }
     #phototakenicon{
         bottom: 37px;
@@ -145,6 +149,10 @@
     #microphone{
         bottom: 0;
         left: 64px;
+    }
+    #fullscreen{
+        bottom: 0;
+        left: 128px;
     }
 }
 #canvas{

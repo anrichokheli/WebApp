@@ -173,6 +173,10 @@
                             <td>9</td>
                             <td>Voice upload unix time (array[int])</td>
                         </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>Emergency mode upload unix time (array[int])</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

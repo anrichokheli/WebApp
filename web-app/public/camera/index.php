@@ -44,8 +44,9 @@
                 <button id="rotate" class="buttons singlebuttons" disabled title="<?php echo $langJSON["rotate"]; ?>"><img alt width="32" height="32" src="../images/rotate.svg"></button>
                 <button id="microphone" class="buttons singlebuttons" disabled title="<?php echo $langJSON["microphone"]; ?>"><img alt width="32" height="32" src="/images/disabledmicrophone.svg" class="whiteicon"></button>
                 <button id="flashlight" class="buttons singlebuttons" disabled title="<?php echo $langJSON["flashlight"]; ?>"><img alt width="32" height="32" src="../images/flashlight0.svg"></button>
+                <button id="fullscreen" class="buttons singlebuttons" disabled title="<?php echo $langJSON["fullscreen"]; ?>"><img alt width="32" height="32" src="/images/fullscreen.svg" class="whiteicon"></button>
                 <a href="/app" style="text-decoration: none;top: 0;left: 0;" class="buttons singlebuttons" id="psbutton" title="<?php echo $langJSON["gomainpage"]; ?>">
-                    <img width="32" height="32" src="../images/pedestriansos.svg" alt>
+                    <img width="32" height="32" src="/images/pedestriansos.svg" alt>
                 </a>
                 <div id="statusBox">
                     <div id="status2" class="progressbardiv">
@@ -69,6 +70,15 @@
                     <img width="32" height="32" src="/images/live.svg">
                     <img width="32" height="32" src="/images/uploadicon.svg" class="whiteicon">
                     <span id="livechunksvalue" class="statusValueSpan"></span>
+                </div>
+                <div id="iframeOverlayDiv" style="display:none;">
+                    <div>
+                        <a id="psbutton2" href="/app">
+                            <img width="32" height="32" src="/images/pedestriansos.svg" style="position:absolute;left:0;" class="whiteicon" title="<?php echo $langJSON["gomainpage"]; ?>" alt>
+                        </a>
+                        <img width="32" height="32" src="/images/camera.svg" class="whiteicon" title="<?php echo $langJSON["camera"]; ?>" alt>
+                    </div>
+                    <iframe id="overlayIframe"></iframe>
                 </div>
             </div>
         </div>

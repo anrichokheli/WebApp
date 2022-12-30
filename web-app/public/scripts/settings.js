@@ -213,6 +213,7 @@ try{
         ["camerarecordvideolocationattach", true],
         ["cameralivestreamlocationattach", true],
         ["cameralivestreamconstantlylocationattach", true],
+        ["cameratakephotoonvideoclick", false],
         ["hiddencameratakephotolocationattach", true],
         ["hiddencamerarecordvideolocationattach", true],
         ["hiddencameralivestreamlocationattach", true],

@@ -272,7 +272,7 @@ function uploadLocation(n, id, key, coordinates){
                 window.addEventListener("online", onlineFunc);
             },0);
         };
-        ajax.send("id="+encodeURIComponent(id)+"&key="+encodeURIComponent(key)+"&latitude="+encodeURIComponent(coordinates[0])+"&longitude="+encodeURIComponent(coordinates[1])+"&altitude="+encodeURIComponent(coordinates[2])+"&accuracy="+encodeURIComponent(coordinates[3])+"&altitudeaccuracy="+encodeURIComponent(coordinates[4]));
+        ajax.send("id="+encodeURIComponent(id)+"&key="+encodeURIComponent(key)+"&latitude="+encodeURIComponent(coordinates[0])+"&longitude="+encodeURIComponent(coordinates[1])+"&altitude="+encodeURIComponent(coordinates[2])+"&accuracy="+encodeURIComponent(coordinates[3])+"&altitudeAccuracy="+encodeURIComponent(coordinates[4])+"&location_time="+encodeURIComponent(coordinates[5]));
     },0);
 }
 var latitude;
@@ -345,7 +345,7 @@ function afterLocation(position)  {
     accuracy = position.coords.accuracy;
     altitudeAccuracy = position.coords.altitudeAccuracy;
     locationTime = position.timestamp;
-    var locationCoordinatesArray = [latitude, longitude, altitude, accuracy, altitudeAccuracy];
+    var locationCoordinatesArray = [latitude, longitude, altitude, accuracy, altitudeAccuracy, locationTime];
     if(locationUploadArray.length > 0){
         for(var key in locationUploadArray){
             uploadLocation(locationUploadArray[key][0], locationUploadArray[key][1], locationUploadArray[key][2], locationCoordinatesArray);
@@ -509,18 +509,25 @@ function createDownloadButton(file){
     downloadButton.title = getString("download");
     return downloadButton;
 }
+function linkButtonClicked(e, src){
+    if(somethingInProgress()){
+        e.preventDefault();
+        openIframeOverlay(src);
+    }
+}
 function createViewButton(n){
     var viewButton = document.createElement("a");
     viewButton.innerHTML = '<img class="whiteicon" width="32" height="32" src="../images/viewicon.svg" alt>';
     viewButton.classList.add("buttons");
-    viewButton.href = "../view2?n=" + n;
+    viewButton.href = "/view2?n=" + n;
     viewButton.target = "_blank";
     viewButton.title = getString("viewupload");
     viewButton.onclick = function(e){
-        if(emergencyModeEnabled){
-            e.preventDefault();
-            this.classList.add("disabled");
-        }
+        // if(emergencyModeEnabled){
+        //     e.preventDefault();
+        //     this.classList.add("disabled");
+        // }
+        linkButtonClicked(e, this.href);
     };
     return viewButton;
 }
@@ -604,7 +611,7 @@ function uploadFile(file, cameraMode, id0, id, key, n0){
             }
         }else if(locationUploadEnabled){
             if(latitude != null && longitude != null && localStorage.getItem("currentlocationmode") == "true")    {
-                preUpload(locationCoordinates, currentUploadID, [latitude, longitude, altitude, accuracy, altitudeAccuracy], statusDiv);
+                preUpload(locationCoordinates, currentUploadID, [latitude, longitude, altitude, accuracy, altitudeAccuracy, locationTime], statusDiv);
             }else{
                 if(!watchPositionID && !detectingLocation){
                     getLocation2();
@@ -1008,8 +1015,11 @@ function liveChunksUploaded(){
         return true;
     }
 }
+function somethingInProgress(){
+    return (unloadWarning || videoRecording || liveStreaming || !liveChunksUploaded() || locationPreUploadElements.length || locationUploadArray.length);
+}
 window.addEventListener("beforeunload", function(e){
-    if(unloadWarning || videoRecording || liveStreaming || !liveChunksUploaded() || locationPreUploadElements.length || locationUploadArray.length)    {
+    if(somethingInProgress())    {
         e.preventDefault();
         e.returnValue = '';
     }
@@ -1091,8 +1101,35 @@ try{
     });
 }catch(e){}
 try{
+    var iframeOverlayDiv = document.getElementById("iframeOverlayDiv");
+    var overlayIframe = document.getElementById("overlayIframe");
+    function openIframeOverlay(src){
+        iframeOverlayDiv.style.display = "flex";
+        if(overlayIframe.src != window.location.origin+src){
+            overlayIframe.src = src;
+        }
+    }
     var bottomButtons = document.getElementById("bottombuttons");
     var psbutton = document.getElementById("psbutton");
+    psbutton.onclick = function(e){
+        linkButtonClicked(e, "/app");
+    };
+    var fullscreenButton = document.getElementById("fullscreen");
+    fullscreenButton.onclick = function(){
+        if(document.fullscreenElement){
+            document.exitFullscreen();
+        }else{
+            document.documentElement.requestFullscreen();
+        }
+    };
+    document.onfullscreenchange = function(){
+        if(document.fullscreenElement){
+            fullscreenButton.children[0].src = "/images/exitfullscreen.svg";
+        }else{
+            fullscreenButton.children[0].src = "/images/fullscreen.svg";
+        }
+    };
+    fullscreenButton.disabled = 0;
     function setScreenOrientation(){
         if(screen.orientation.type == "portrait-primary"){
             bottomButtons.style.right = "initial";
@@ -1112,6 +1149,10 @@ try{
             microphoneButton.style.top = "64px";
             microphoneButton.style.right = "initial";
             microphoneButton.style.bottom = "initial";
+            fullscreenButton.style.left = "0";
+            fullscreenButton.style.top = "128px";
+            fullscreenButton.style.right = "initial";
+            fullscreenButton.style.bottom = "initial";
         }
         else if(screen.orientation.type == "landscape-primary"){
             bottomButtons.style.left = "initial";
@@ -1130,6 +1171,10 @@ try{
             microphoneButton.style.left = "64px";
             microphoneButton.style.top = "initial";
             microphoneButton.style.right = "initial";
+            fullscreenButton.style.left = "128px";
+            fullscreenButton.style.top = "initial";
+            fullscreenButton.style.right = "initial";
+            fullscreenButton.style.bottom = "0";
         }
         else if(screen.orientation.type == "landscape-secondary"){
             bottomButtons.style.right = "initial";
@@ -1148,6 +1193,10 @@ try{
             microphoneButton.style.right = "64px";
             microphoneButton.style.top = "initial";
             microphoneButton.style.left = "initial";
+            fullscreenButton.style.right = "128px";
+            fullscreenButton.style.top = "initial";
+            fullscreenButton.style.left = "initial";
+            fullscreenButton.style.bottom = "0";
         }
         try{
             takePhotoDraggable.style.top = "calc(50% - 72px)";
@@ -1220,7 +1269,7 @@ try{
             var locationEnabledVal = localStorage.getItem("cameralivestreamlocationattach");
             if((locationEnabledVal == "true") || !locationEnabledVal){
                 if(latitude != null && longitude != null && localStorage.getItem("currentlocationmode") == "true")    {
-                    uploadLocation(liveN_2, liveID_2, liveKey_2, [latitude, longitude, altitude, accuracy, altitudeAccuracy]);
+                    uploadLocation(liveN_2, liveID_2, liveKey_2, [latitude, longitude, altitude, accuracy, altitudeAccuracy, locationTime]);
                 }else{
                     if(!watchPositionID && !detectingLocation){
                         getLocation2();
@@ -1254,7 +1303,13 @@ try{
     var liveStartupOfflineRecording;
     function liveSetupAjaxOnerror(ajax){
         liveStartupOfflineRecording = true;
-        addStatus("live", "livestream", "ff0000", ajax.Error);
+        var error;
+        if(ajax.Error){
+            error = ajax.Error;
+        }else if(ajax.response){
+            error = ajax.response;
+        }
+        addStatus("live", "livestream", "ff0000", error);
         /*if(emergencyModeEnabled){
             var onlineFunc = function(){
                 window.removeEventListener("online", onlineFunc);
@@ -1397,6 +1452,10 @@ function sendEmergencyModeSignal(){
 }
 var emergencyModeEnabled;
 var emergencyModeClicked;
+var psbutton2 = document.getElementById("psbutton2");
+psbutton2.onclick = function(e){
+    e.stopPropagation();
+};
 function emergencyMode(){
     unloadWarning++;
     liveButton.disabled = 1;
@@ -1404,7 +1463,9 @@ function emergencyMode(){
     // psbutton.onclick = function(e){
     //     e.preventDefault();
     // };
-    psbutton.classList.add("disabled");
+    // psbutton.classList.add("disabled");
+    psbutton2.classList.add("disabled");
+    overlayIframe.sandbox = "allow-same-origin allow-scripts";
     emergencyModeButton.disabled = 1;
     if(videoRecording){
         emergencyModeClicked = 1;
@@ -1492,6 +1553,9 @@ try{
             }else{
                 this.style.zIndex = "initial";
             }
+        }
+        if(localStorage.getItem("cameratakephotoonvideoclick") == "true"){
+            takePhoto();
         }
     };
     var blackscreenOverlay = document.createElement("div");
@@ -1666,4 +1730,22 @@ try{
             }
         });
     }
+}catch(e){}
+try{
+    iframeOverlayDiv.style.position = "absolute";
+    iframeOverlayDiv.style.width = "100%";
+    iframeOverlayDiv.style.height = "100%";
+    iframeOverlayDiv.style.flexDirection = "column";
+    iframeOverlayDiv.style.zIndex = "3";
+    iframeOverlayDiv.children[0].style.display = "flex";
+    iframeOverlayDiv.children[0].style.backgroundColor = "#256aff80";
+    iframeOverlayDiv.children[0].style.justifyContent = "center";
+    iframeOverlayDiv.children[0].style.padding = "1px";
+    iframeOverlayDiv.children[0].onclick = function(){
+        iframeOverlayDiv.style.display = "none";
+    };
+    overlayIframe.style.backgroundColor = "#fff";
+    overlayIframe.style.width = "100%";
+    overlayIframe.style.height = "100%";
+    overlayIframe.style.border = "none";
 }catch(e){}
