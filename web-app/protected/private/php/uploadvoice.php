@@ -2,9 +2,9 @@
     if(!empty($_FILES["voice"]["tmp_name"]) && isset($_POST["id"]) && isset($_POST["key"]) && ctype_alnum($_POST["id"]) && ctype_alnum($_POST["key"])/*ctype_digit($_POST["id"])*//* && ctype_digit($_POST["key"])*/)    {
         define("upload", protectedPublicPath . "uploads/");
         define("uploadfiles", upload . "files/");
-        define("uploadstrings", upload . "strings/");
+        // define("uploadstrings", upload . "strings/");
         define("voices", uploadfiles . "voices/");
-        define("voicetimes", uploadstrings . "voicetimes/");
+        // define("voicetimes", uploadstrings . "voicetimes/");
         define("secretPath", protectedPrivatePath . "secret/");
         define("uploadSecretsPath", secretPath . "uploads/");
         define("idsPath", uploadSecretsPath . "ids/");
@@ -66,17 +66,31 @@
             $t = explode(" ", $t);
             return $t[1] . substr($t[0], 2, -2);
         }
-        $voicepath = $dirvoicepath . /*(count(scandir($dirvoicepath)) - 2)*/getID() . '.' . $extension;
-        $dirvoicepathT = voicetimes . $GLOBALS["n"] . "/";
-        if(!file_exists($dirvoicepathT)){
-            mkdir($dirvoicepathT);
-        }
-        $voicepathT = $dirvoicepathT . /*(count(scandir($dirvoicepathT)) - 2)*/getID() . ".txt";
+        $fileName = getID();
+        $voicepath = $dirvoicepath . /*(count(scandir($dirvoicepath)) - 2)*/$fileName . '.' . $extension;
+        // $dirvoicepathT = voicetimes . $GLOBALS["n"] . "/";
+        // if(!file_exists($dirvoicepathT)){
+        //     mkdir($dirvoicepathT);
+        // }
+        // $voicepathT = $dirvoicepathT . /*(count(scandir($dirvoicepathT)) - 2)*/getID() . ".txt";
         if(move_uploaded_file($_FILES["voice"]["tmp_name"], $voicepath))  {
             $t = time();
-            if(!file_put_contents($voicepathT, $t)){
-                echo("-6");
+            $mysqliConn = parse_ini_file(protectedPrivatePath . "mysqliconn.ini");
+            $serverName = $mysqliConn["serverName"];
+            $userName = $mysqliConn["userName"];
+            $password = $mysqliConn["password"];
+            $dbname = $mysqliConn["dbname"];
+            $conn = mysqli_connect($serverName, $userName, $password, $dbname);
+            if($conn){
+                $stmt = $conn->prepare("INSERT INTO uploads_voice (id, file_name, t, file_extension) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("ssis", $n, $fileName, $t, $extension);
+                $stmt->execute();
+                $stmt->close();
+                mysqli_close($conn);
             }
+            // if(!file_put_contents($voicepathT, $t)){
+            //     echo("-6");
+            // }
             if(isset($_POST["submit"]) || isset($_POST["ps"]))    {
                 /*if(!file_exists(uploadstrings . "descriptions/" . $_POST["id"] . ".txt"))    {
                     define("maxDescriptionLength", 100000);
@@ -112,7 +126,7 @@
                 //}
                 $id = $_POST["id"];
                 $key = $_POST["key"];
-                $uploadLocationAfterGot = !file_exists(uploadstrings . "locations/" . $n);
+                // $uploadLocationAfterGot = !file_exists(uploadstrings . "locations/" . $n);
                 ob_start();
                 include(phpPath . "locationjs.php");
                 $locationHTML = ob_get_clean();
@@ -123,7 +137,7 @@
                     $filesHTML = str_replace(".svg", ".png", $filesHTML);
                     $descriptionHTML = str_replace(".svg", ".png", $descriptionHTML);
                     $voiceHTML = str_replace(".svg", ".png", $voiceHTML);
-                    $html = "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&n=" . $n . "\">" . getString("viewupload") . "</a></div>";
+                    $html = "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&v0&n=" . $n . "\">" . getString("viewupload") . "</a></div>";
                     $html .= '<div>' . setLanguage($filesHTML) . '<br>' . setLanguage($descriptionHTML) . '<br>' . setLanguage($voiceHTML) . '<br>' . $locationHTML . '</div>';
                     include(phpPath . "index.php");
                 }else if(isset($_POST["ps"])){
@@ -136,7 +150,7 @@
                     $descriptionHTML = str_replace(".svg", ".png", $descriptionHTML);
                     $voiceHTML = str_replace(".svg", ".png", $voiceHTML);
                     //echo '<div>' . setLanguage($filesHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($descriptionHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($voiceHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . $locationHTML . '</div>';
-                    $topHtml = "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&n=" . $n . "\">" . getString("viewupload") . "</a></div>";
+                    $topHtml = "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&v0&n=" . $n . "\">" . getString("viewupload") . "</a></div>";
                     $bottomHtml = '<div>' . setLanguage($filesHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($descriptionHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($voiceHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . $locationHTML . '</div>';
                     include($_SERVER["DOCUMENT_ROOT"] . "/ps/index.php");
                 }else{

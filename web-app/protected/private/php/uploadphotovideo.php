@@ -2,14 +2,14 @@
     if(isset($_FILES["photovideo"]) || isset($_POST["filelink"]))    {
         define("upload", protectedPublicPath . "uploads/");
         define("uploadfiles", upload . "files/");
-        define("uploadstrings", upload . "strings/");
+        // define("uploadstrings", upload . "strings/");
         define("photovideos", uploadfiles . "photovideos/");
-        define("photovideotimes", uploadstrings . "photovideotimes/");
-        define("descriptiontimes", uploadstrings . "descriptiontimes/");
-        define("locationtimes", uploadstrings . "locationtimes/");
-        define("voicetimes", uploadstrings . "voicetimes/");
-        define("descriptions", uploadstrings . "descriptions/");
-        define("locations", uploadstrings . "locations/");
+        // define("photovideotimes", uploadstrings . "photovideotimes/");
+        // define("descriptiontimes", uploadstrings . "descriptiontimes/");
+        // define("locationtimes", uploadstrings . "locationtimes/");
+        // define("voicetimes", uploadstrings . "voicetimes/");
+        // define("descriptions", uploadstrings . "descriptions/");
+        // define("locations", uploadstrings . "locations/");
         define("voices", uploadfiles . "voices/");
         //define("maxFilesQuantity", 1000);
         define("secretPath", protectedPrivatePath . "secret/");
@@ -81,9 +81,10 @@
             if(!(file_exists($idPath) && file_exists($keyPath) && password_verify($uploadKey, file_get_contents($keyPath))))    {
                 exit("-7");
             }
-            $filesName = file_get_contents($idPath);
+            $uploadMainID = file_get_contents($idPath);
+            $appendFileMode = 1;
         }else{
-            $filesName = getID();
+            $uploadMainID = getID();
         }
         /*if($filesQuantity >= maxFilesQuantity)    {
             exit("server total files quantity limit: " . maxFilesQuantity);
@@ -108,7 +109,7 @@
             define("maxFileSize", 25000000);
             define("allowedExtensions", array(/*image*/"bmp", "gif", "ico", "jpg", "png",/* "svg",*/ "tif", "webp", /*video*/"avi", "mpeg", "ogv", "ts", "webm", "3gp", "3g2", "mp4"));
             function upload($filePath, $fileName, $fileIndex, $uploadedFilesQuantity, $httppostuploadfile){
-                $fileIndex += $GLOBALS["dirFilesQuantity"];
+                // $fileIndex += $GLOBALS["dirFilesQuantity"];
                 if(filesize($filePath) > maxFileSize)    {
                     echoError(getString("maxfilesize") . ": " . (maxFileSize / 1000000) . "MB. (" . $fileName . ")");
                     return;
@@ -156,43 +157,36 @@
                     echoError(getString("allowedext") . ": " . implode(", ", allowedExtensions) . ". (" . $fileName . ")");
                     return;
                 }
-                $dirPath = photovideos . $GLOBALS["filesName"] . '/';
+                $dirPath = photovideos . $GLOBALS["uploadMainID"] . '/';
                 if(!file_exists($dirPath)){
                     if(!mkdir($dirPath)){
                         exitError("-6");
                     }
                 }
-                $path = $dirPath . /*$fileIndex*/getID() . '.' . $extension;
+                $GLOBALS["photovideoName"] = getID();
+                $path = $dirPath . $GLOBALS["photovideoName"] . '.' . $extension;
                 if(($httppostuploadfile && move_uploaded_file($filePath, $path)) || rename($filePath, $path))  {
-                    $t = time();
-                    $dirPath = photovideotimes . $GLOBALS["filesName"] . '/';
-                    if(!file_exists($dirPath)){
-                        mkdir($dirPath);
-
-                        $mysqliConn = parse_ini_file(protectedPrivatePath . "mysqliconn.ini");
-                        $serverName = $mysqliConn["serverName"];
-                        $userName = $mysqliConn["userName"];
-                        $password = $mysqliConn["password"];
-                        $dbname = $mysqliConn["dbname"];
-                        $conn = mysqli_connect($serverName, $userName, $password, $dbname);
-                        if($conn){
-                            $stmt = $conn->prepare("INSERT INTO uploads (filepath, filetime) VALUES (?, ?)");
-                            $stmt->bind_param("si", $GLOBALS["filesName"], $t);
-                            $stmt->execute();
-                            $stmt->close();
-                            mysqli_close($conn);
-                        }
-
-                    }
-                    if(file_exists($dirPath)){
-                        $dirFilePath = $dirPath . /*$fileIndex*/getID() . ".txt";
-                        file_put_contents($dirFilePath, $t);
-                        if(!file_exists($dirFilePath)){
-                            echoError("-4 (" . $fileName . ")");
-                        }
+                    $GLOBALS["photovideoTime"] = time();
+                    if($type === "image"){
+                        $GLOBALS["photovideoType"] = 0;
                     }else{
-                        echoError("-3");
+                        $GLOBALS["photovideoType"] = 1;
                     }
+                    $GLOBALS["photovideoExtension"] = $extension;
+                    $GLOBALS["stmt"]->execute();
+                    // $dirPath = photovideotimes . $GLOBALS["uploadMainID"] . '/';
+                    // if(!file_exists($dirPath)){
+                    //     mkdir($dirPath);
+                    // }
+                    // if(file_exists($dirPath)){
+                    //     $dirFilePath = $dirPath . /*$fileIndex*/getID() . ".txt";
+                    //     file_put_contents($dirFilePath, $GLOBALS["photovideoTime"]);
+                    //     if(!file_exists($dirFilePath)){
+                    //         echoError("-4 (" . $fileName . ")");
+                    //     }
+                    // }else{
+                    //     echoError("-3");
+                    // }
                     /*if(($uploadedFilesQuantity - $fileIndex) != 1){
                         return;
                     }*/
@@ -201,11 +195,21 @@
                     echoError("-1 (" . $fileName . ")");
                 }
             }
-            $directoryPath = photovideos . $GLOBALS["filesName"];
+            $directoryPath = photovideos . $GLOBALS["uploadMainID"];
             if(file_exists($directoryPath)){
                 $dirFilesQuantity = count(scandir($directoryPath)) - 2;
             }else{
                 $dirFilesQuantity = 0;
+            }
+            $mysqliConn = parse_ini_file(protectedPrivatePath . "mysqliconn.ini");
+            $serverName = $mysqliConn["serverName"];
+            $userName = $mysqliConn["userName"];
+            $password = $mysqliConn["password"];
+            $dbname = $mysqliConn["dbname"];
+            $conn = mysqli_connect($serverName, $userName, $password, $dbname);
+            function prepareMysqlPhotovideo(){
+                $GLOBALS["stmt"] = $GLOBALS["conn"]->prepare("INSERT INTO uploads_photovideo (id, file_name, t, file_type, file_extension) VALUES (?, ?, ?, ?, ?)");
+                $GLOBALS["stmt"]->bind_param("ssiis", $GLOBALS["uploadMainID"], $GLOBALS["photovideoName"], $GLOBALS["photovideoTime"], $GLOBALS["photovideoType"], $GLOBALS["photovideoExtension"]);
             }
             if(isset($_FILES["photovideo"])){
                 if(is_countable($_FILES["photovideo"]["tmp_name"])){
@@ -215,6 +219,7 @@
                         exitError("maximum number of files is " . maxNumFiles);
                     }
                     if($GLOBALS["correct"]){
+                        prepareMysqlPhotovideo();
                         for($fileIndex = 0; $fileIndex < $uploadedFilesQuantity; $fileIndex++){
                             if(!empty($_FILES["photovideo"]["tmp_name"][$fileIndex])){
                                 upload($_FILES["photovideo"]["tmp_name"][$fileIndex], $_FILES["photovideo"]["name"][$fileIndex], $fileIndex, $uploadedFilesQuantity, 1);
@@ -222,19 +227,25 @@
                                 echoError(getString("filenotchosen"));
                             }
                         }
+                        $stmt->close();
                     }
                 }else{
+                    prepareMysqlPhotovideo();
                     upload($_FILES["photovideo"]["tmp_name"], $_FILES["photovideo"]["name"], 0, 1, 1);
+                    $stmt->close();
                 }
             }else{
                 $urldata = @file_get_contents($_POST["filelink"]);
                 if($urldata === FALSE){
                     exitError("ERROR! (" . $_POST["filelink"] . ")");
                 }else{
-                    $tmp = tmpPath . $filesName;
+                    // $tmp = tmpPath . $filesName;
+                    $tmp = tempnam(tmpPath, "linkphotovideofile");
                     file_put_contents($tmp, $urldata);
                     if(file_exists($tmp)){
+                        prepareMysqlPhotovideo();
                         upload($tmp, $_POST["filelink"], 0, 1, 0);
+                        $stmt->close();
                     }else{
                         exitError("-2 (" . $_POST["filelink"] . ")");
                     }
@@ -244,21 +255,33 @@
                 }
             }
             if($GLOBALS["uploaded"]){
-                if(isset($GLOBALS["uploadID"]) && ctype_digit($GLOBALS["uploadID"]) && isset($GLOBALS["uploadKey"])){
+                // if(isset($GLOBALS["uploadID"]) && ctype_digit($GLOBALS["uploadID"]) && isset($GLOBALS["uploadKey"])){
+                if(isset($GLOBALS["appendFileMode"]) && $GLOBALS["appendFileMode"] == 1){
                     $id = $GLOBALS["uploadID"];
                     $key = $GLOBALS["uploadKey"];
                 }else{
-                $id = getKey(32/*, 1*/);
+                    $t = time();
+                    $id = getKey(32/*, 1*/);
                     $secretIDpath = idsPath . $id;
-                    file_put_contents($secretIDpath, $GLOBALS["filesName"]);
+                    file_put_contents($secretIDpath, $GLOBALS["uploadMainID"]);
                     if(!file_exists($secretIDpath)){
                         echoError("-8");
                     }
                     $key = getKey(1000);
                     $keyPath = keysPath . $id;
-                    file_put_contents($keyPath, password_hash($key, PASSWORD_DEFAULT));
+                    $keyHash = password_hash($key, PASSWORD_DEFAULT);
+                    file_put_contents($keyPath, $keyHash);
                     if(!file_exists($keyPath)){
                         echoError("-5");
+                    }
+                    if($conn){
+                        // $stmt = $conn->prepare("INSERT INTO uploads_main (id, t, id_key, password_key) VALUES (?, ?, ?, ?)");
+                        // $stmt->bind_param("siss", $GLOBALS["uploadMainID"], $t, $id, $keyHash);
+                        $stmt = $conn->prepare("INSERT INTO uploads_main (id, t) VALUES (?, ?)");
+                        $stmt->bind_param("si", $GLOBALS["uploadMainID"], $t);
+                        $stmt->execute();
+                        $stmt->close();
+                        mysqli_close($conn);
                     }
                 }
                 if($GLOBALS["htmlMode"])    {
@@ -278,7 +301,7 @@
                         $filesHTML = str_replace("value_id", $id, str_replace("value_key", $key, $filesHTML));
                         $descriptionHTML = str_replace("value_id", $id, str_replace("value_key", $key, $descriptionHTML));
                         $voiceHTML = str_replace("value_id", $id, str_replace("value_key", $key, $voiceHTML));
-                        $uploadLocationAfterGot = !file_exists(locations . $GLOBALS["filesName"]);
+                        // $uploadLocationAfterGot = !file_exists(locations . $GLOBALS["uploadMainID"]);
                         ob_start();
                         include(phpPath . "locationjs.php");
                         $locationHTML = ob_get_clean();
@@ -289,12 +312,12 @@
                             $filesHTML = str_replace(".svg", ".png", $filesHTML);
                             $descriptionHTML = str_replace(".svg", ".png", $descriptionHTML);
                             $voiceHTML = str_replace(".svg", ".png", $voiceHTML);
-                            $html = $errorHTML . "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&n=" . $GLOBALS["filesName"] . "\">" . getString("viewupload") . "</a></div>";
+                            $html = $errorHTML . "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&v0&n=" . $GLOBALS["uploadMainID"] . "\">" . getString("viewupload") . "</a></div>";
                             $html .= '<div>' . setLanguage($filesHTML) . '<br>' . setLanguage($descriptionHTML) . '<br>' . setLanguage($voiceHTML) . '<br>' . $locationHTML . '</div>';
                             include(phpPath . "index.php");
                         }else if(isset($_POST["ps"]))    {
                             //$psContent = file_get_contents($_SERVER["DOCUMENT_ROOT"] . "/ps/index.php");
-                            //echo(str_replace("}label", "}label,.buttons", str_replace("</h1>", "</h1>" . $errorHTML . "<div style=\"border:2px solid #00ff00;\">upload completed<br><a href=\"../?view&n=" . $GLOBALS["filesName"] . "\">view upload</a></div>", substr($psContent, strpos($psContent, "<!DOCTYPE html>")))));
+                            //echo(str_replace("}label", "}label,.buttons", str_replace("</h1>", "</h1>" . $errorHTML . "<div style=\"border:2px solid #00ff00;\">upload completed<br><a href=\"../?view&n=" . $GLOBALS["uploadMainID"] . "\">view upload</a></div>", substr($psContent, strpos($psContent, "<!DOCTYPE html>")))));
                             $filesHTML = str_replace("</form>", "<input type=\"hidden\" name=\"ps\"></form>", $filesHTML);
                             $descriptionHTML = str_replace("</form>", "<input type=\"hidden\" name=\"ps\"></form>", $descriptionHTML);
                             $voiceHTML = str_replace("</form>", "<input type=\"hidden\" name=\"ps\"></form>", $voiceHTML);
@@ -302,7 +325,7 @@
                             $descriptionHTML = str_replace(".svg", ".png", $descriptionHTML);
                             $voiceHTML = str_replace(".svg", ".png", $voiceHTML);
                             //echo '<div>' . setLanguage($filesHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($descriptionHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($voiceHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . $locationHTML . '</div>';
-                            $topHtml = $errorHTML . "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&n=" . $GLOBALS["filesName"] . "\">" . getString("viewupload") . "</a></div>";
+                            $topHtml = $errorHTML . "<div style=\"border:2px solid #00ff00;\">" . getString("uploadcompleted") . "<br><a href=\"../?view&v0&n=" . $GLOBALS["uploadMainID"] . "\">" . getString("viewupload") . "</a></div>";
                             $bottomHtml = '<div>' . setLanguage($filesHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($descriptionHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . setLanguage($voiceHTML/*, $GLOBALS["langJSON"]*/) . '<br>' . $locationHTML . '</div>';
                             include($_SERVER["DOCUMENT_ROOT"] . "/ps/index.php");
                         }else{
@@ -320,7 +343,7 @@
                                 $noscript = "";
                             }
                             $html = "<div class=\"boxs\">";
-                            $html .= "<div class=\"texts\">#: " . $GLOBALS["filesName"] . "</div><div><label for=\"link" . $GLOBALS["filesName"] . "\"><img width=\"16\" height=\"16\" src=\"/images/link.svg\"><span class=\"link title\"><string>link</string></span></label><input type=\"text\" readonly value=\"" . getMainWebAddress() . "/?view&n=" . $GLOBALS["filesName"] . "\" id=\"link" . $GLOBALS["filesName"] . "\"></div><a href=\"?view&n=" . $GLOBALS["filesName"] . $langget . "\" class=\"buttons afteruploadbuttons viewuploadsbuttons\"><img width=\"32\" height=\"32\" src=\"/images/viewicon.svg\">&nbsp;<span><string>viewupload</string></span></a><a href=\"?view&n=" . $GLOBALS["filesName"] . $langget . "\" target=\"_blank\" class=\"buttons afteruploadbuttons viewuploadsbuttons\"><img width=\"32\" height=\"32\" src=\"/images/viewicon.svg\">&nbsp;<span><string>viewupload</string></span>&nbsp;<img width=\"32\" height=\"32\" src=\"/images/newtab.svg\"></a><br><br>";
+                            $html .= "<div class=\"texts\">#: " . $GLOBALS["uploadMainID"] . "</div><div><label for=\"link" . $GLOBALS["uploadMainID"] . "\"><img width=\"16\" height=\"16\" src=\"/images/link.svg\"><span class=\"link title\"><string>link</string></span></label><input type=\"text\" readonly value=\"" . getMainWebAddress() . "/?view&n=" . $GLOBALS["uploadMainID"] . "\" id=\"link" . $GLOBALS["uploadMainID"] . "\"></div><a href=\"?view&n=" . $GLOBALS["uploadMainID"] . $langget . "\" class=\"buttons afteruploadbuttons viewuploadsbuttons\"><img width=\"32\" height=\"32\" src=\"/images/viewicon.svg\">&nbsp;<span><string>viewupload</string></span></a><a href=\"?view&n=" . $GLOBALS["uploadMainID"] . $langget . "\" target=\"_blank\" class=\"buttons afteruploadbuttons viewuploadsbuttons\"><img width=\"32\" height=\"32\" src=\"/images/viewicon.svg\">&nbsp;<span><string>viewupload</string></span>&nbsp;<img width=\"32\" height=\"32\" src=\"/images/newtab.svg\"></a><br><br>";
                             $html .= $filesHTML;
                             $html .= "<br><br>";
                             $html .= $descriptionHTML;
@@ -342,7 +365,7 @@
                     if(isset($GLOBALS["uploadID"])){
                         echo "1";
                     }else{
-                        echo '#' . $GLOBALS["filesName"] . '|' . $id . '|' . $key;
+                        echo '#' . $GLOBALS["uploadMainID"] . '|' . $id . '|' . $key;
                     }
                 }
             }

@@ -38,6 +38,7 @@
     var altitude;
     var accuracy;
     var altitudeAccuracy;
+    var locationTime;
     var uploadLocationAfterGot;
     <?php
         if((isset($_POST["location"]) && $_POST["location"] == 1) && $uploadLocationAfterGot){
@@ -56,8 +57,9 @@
         altitude = coordinates.coords.altitude;
         accuracy = coordinates.coords.accuracy;
         altitudeAccuracy = coordinates.coords.altitudeAccuracy;
+        locationTime = coordinates.timestamp;
         try{
-            locationDiv.innerText = latitude + ", " + longitude + "; " + altitude + "; " + accuracy + "; " + altitudeAccuracy;
+            locationDiv.innerText = latitude + ", " + longitude + "; " + altitude + "; " + accuracy + "; " + altitudeAccuracy + "; " + locationTime;
             uploadLocationButton.disabled = 0;
         }catch(e){}
         if(uploadLocationAfterGot){
@@ -113,7 +115,8 @@
         var altitude0 = altitude;
         var accuracy0 = accuracy;
         var altitudeAccuracy0 = altitudeAccuracy;
-        var locationString = latitude0 + ", " + longitude0 + "; " + altitude0 + "; " + accuracy0 + "; " + altitudeAccuracy0;
+        var locationTime0 = locationTime;
+        var locationString = latitude0 + ", " + longitude0 + "; " + altitude0 + "; " + accuracy0 + "; " + altitudeAccuracy0 + "; " + locationTime0;
         addLocationUploadDiv("#ffff00", locationString, "<?php echoString("uploading"); ?>");
         var ajax = new XMLHttpRequest();
         ajax.onload = function(){
@@ -128,7 +131,7 @@
         };
         ajax.open("POST", "/");
         ajax.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        ajax.send("id="+encodeURIComponent(id)+"&key="+encodeURIComponent(key)+"&latitude="+encodeURIComponent(latitude0)+"&longitude="+encodeURIComponent(longitude0)+"&altitude="+encodeURIComponent(altitude0)+"&accuracy="+encodeURIComponent(accuracy0)+"&altitudeAccuracy="+encodeURIComponent(altitudeAccuracy0));
+        ajax.send("id="+encodeURIComponent(id)+"&key="+encodeURIComponent(key)+"&latitude="+encodeURIComponent(latitude0)+"&longitude="+encodeURIComponent(longitude0)+"&altitude="+encodeURIComponent(altitude0)+"&accuracy="+encodeURIComponent(accuracy0)+"&altitudeAccuracy="+encodeURIComponent(altitudeAccuracy0)+"&location_time="+encodeURIComponent(locationTime0));
     }
     var watchPositionID;
     function getLocation(continuousUpdate, highAccuracy){

@@ -13,18 +13,41 @@
                 exit;
             }
             define("upload", protectedPublicPath . "uploads/");
-            define("uploadstrings", upload . "strings/");
-            define("emergencymodes", uploadstrings . "emergencymodes/");
+            // define("uploadstrings", upload . "strings/");
+            // define("emergencymodes", uploadstrings . "emergencymodes/");
             // file_put_contents(emergencymodes . file_get_contents($idPath) . ".txt", time());
-            $path = emergencymodes . file_get_contents($idPath) . ".txt";
-            if(file_exists($path)){
-                exit("-2");
-            }
-            if(file_put_contents($path, time())){
-                echo "1";
+            // $path = emergencymodes . file_get_contents($idPath) . ".txt";
+            // if(file_exists($path)){
+            //     exit("-2");
+            // }
+            $t = time();
+            $mysqliConn = parse_ini_file(protectedPrivatePath . "mysqliconn.ini");
+            $serverName = $mysqliConn["serverName"];
+            $userName = $mysqliConn["userName"];
+            $password = $mysqliConn["password"];
+            $dbname = $mysqliConn["dbname"];
+            $conn = mysqli_connect($serverName, $userName, $password, $dbname);
+            if($conn){
+                // $stmt = $conn->prepare("UPDATE uploads_main SET emergencymode_t = ? WHERE id_key = ? AND emergencymode_t IS NULL");
+                // $stmt->bind_param("is", $t, $id);
+                $n = file_get_contents($idPath);
+                $stmt = $conn->prepare("UPDATE uploads_main SET emergencymode_t = ? WHERE id = ? AND emergencymode_t IS NULL");
+                $stmt->bind_param("is", $t, $n);
+                if($stmt->execute()){
+                    echo "1";
+                }else{
+                    echo "0";
+                }
+                $stmt->close();
+                mysqli_close($conn);
             }else{
-                echo "0";
+                echo "-3";
             }
+            // if(file_put_contents($path, $t)){
+            //     // echo "1";
+            // }else{
+            //     // echo "0";
+            // }
         }else{
             echo "-1";
         }

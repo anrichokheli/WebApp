@@ -7,9 +7,9 @@
         define("liveSecretsPath", secretPath . "live/");
         define("liveIdsPath", liveSecretsPath . "ids/");
         define("liveKeysPath", liveSecretsPath . "keys/");
-        define("uploadstrings", upload . "strings/");
+        // define("uploadstrings", upload . "strings/");
         define("photovideos", uploadfiles . "photovideos/");
-        define("photovideotimes", uploadstrings . "photovideotimes/");
+        // define("photovideotimes", uploadstrings . "photovideotimes/");
         define("uploadSecretsPath", secretPath . "uploads/");
         define("idsPath", uploadSecretsPath . "ids/");
         define("keysPath", uploadSecretsPath . "keys/");
@@ -36,38 +36,66 @@
             $live_n = getID();
             $live_id = getKey(32);
             $live_key = getKey(1000);
-            file_put_contents(livevideos . $live_n . ".webm", "");
+            $liveKeyHash = password_hash($live_key, PASSWORD_DEFAULT);
+            $extension = "webm";
+            file_put_contents(livevideos . $live_n . "." . $extension, "");
             file_put_contents(liveIdsPath . $live_id, $live_n);
-            file_put_contents(liveKeysPath . $live_id, password_hash($live_key, PASSWORD_DEFAULT));
+            file_put_contents(liveKeysPath . $live_id, $liveKeyHash);
             $n = getID();
             $id = getKey(32);
             $key = getKey(1000);
-            $dirPath = photovideos . $n . "/";
+            $keyHash = password_hash($key, PASSWORD_DEFAULT);
+            // $dirPath = photovideos . $n . "/";
             $t = time();
-            if(mkdir($dirPath)){
-                $mysqliConn = parse_ini_file(protectedPrivatePath . "mysqliconn.ini");
-                $serverName = $mysqliConn["serverName"];
-                $userName = $mysqliConn["userName"];
-                $password = $mysqliConn["password"];
-                $dbname = $mysqliConn["dbname"];
-                $conn = mysqli_connect($serverName, $userName, $password, $dbname);
-                if($conn){
-                    $stmt = $conn->prepare("INSERT INTO uploads (filepath, filetime) VALUES (?, ?)");
-                    $stmt->bind_param("si", $n, $t);
-                    $stmt->execute();
-                    $stmt->close();
-                    mysqli_close($conn);
-                } 
-            }
-            file_put_contents($dirPath . $live_n, "");
+            // if(mkdir($dirPath)){
+                // $mysqliConn = parse_ini_file(protectedPrivatePath . "mysqliconn.ini");
+                // $serverName = $mysqliConn["serverName"];
+                // $userName = $mysqliConn["userName"];
+                // $password = $mysqliConn["password"];
+                // $dbname = $mysqliConn["dbname"];
+                // $conn = mysqli_connect($serverName, $userName, $password, $dbname);
+                // if($conn){
+                //     $stmt = $conn->prepare("INSERT INTO uploads (id, t) VALUES (?, ?)");
+                //     $stmt->bind_param("si", $n, $t);
+                //     $stmt->execute();
+                //     $stmt->close();
+                //     mysqli_close($conn);
+                // } 
+                
+            // }
+            // file_put_contents($dirPath . $live_n, "");
             // $t = time();
-            $dirPath = photovideotimes . $n . '/';
-            if(!file_exists($dirPath)){
-                mkdir($dirPath);
-            }
-            file_put_contents($dirPath . getID() . ".txt", $t);
+            // $dirPath = photovideotimes . $n . '/';
+            // if(!file_exists($dirPath)){
+                // mkdir($dirPath);
+            // }
+            // file_put_contents($dirPath . getID() . ".txt", $t);
             file_put_contents(idsPath . $id, $n);
-            file_put_contents(keysPath . $id, password_hash($key, PASSWORD_DEFAULT));
+            file_put_contents(keysPath . $id, $keyHash);
+            $mysqliConn = parse_ini_file(protectedPrivatePath . "mysqliconn.ini");
+            $serverName = $mysqliConn["serverName"];
+            $userName = $mysqliConn["userName"];
+            $password = $mysqliConn["password"];
+            $dbname = $mysqliConn["dbname"];
+            $conn = mysqli_connect($serverName, $userName, $password, $dbname);
+            if($conn){
+                // $stmt = $conn->prepare("INSERT INTO uploads_main (id, t, id_key, password_key) VALUES (?, ?, ?, ?)");
+                // $stmt->bind_param("siss", $n, $t, $id, $keyHash);
+                $stmt = $conn->prepare("INSERT INTO uploads_main (id, t) VALUES (?, ?)");
+                $stmt->bind_param("si", $n, $t);
+                $stmt->execute();
+                $stmt->close();
+                $stmt = $conn->prepare("INSERT INTO uploads_photovideo (id, file_name, t, file_type, file_extension) VALUES (?, ?, ?, ?, ?)");
+                $type = 2;
+                $stmt->bind_param("ssiis", $n, $live_n, $t, $type, $extension);
+                $stmt->execute();
+                $stmt->close();
+                // $stmt = $conn->prepare("INSERT INTO uploads_live (id, id_key, password_key) VALUES (?, ?, ?)");
+                // $stmt->bind_param("sss", $n, $live_id, $liveKeyHash);
+                // $stmt->execute();
+                // $stmt->close();
+                mysqli_close($conn);
+            }
             if(file_exists(livevideos . $live_n . ".webm") && file_exists(liveIdsPath . $live_id) && file_exists(liveKeysPath . $live_id)){
                 echo "#" . $live_n . "|" . $live_id . "|" . $live_key . "|" . $n . "|" . $id . "|" . $key;
             }else{
@@ -82,7 +110,7 @@
                     echo "-2";
                 }
                 fclose($fileResource);
-                move_uploaded_file($_FILES["chunk"]["tmp_name"], livevideos . file_get_contents(liveIdsPath . $_POST["id"]) . "lastlivechunk");
+                // move_uploaded_file($_FILES["chunk"]["tmp_name"], livevideos . file_get_contents(liveIdsPath . $_POST["id"]) . "lastlivechunk");
             }else{
                 echo "-1";
             }
