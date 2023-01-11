@@ -177,18 +177,19 @@ function inputSettingSetup(id, input, storagename, defaultval){
         localStorage.setItem(storagename, this.value);
     };
 }
-try{
-    var saveUploads = document.getElementById("saveuploads");
-    /*if(localStorage.getItem("saveuploads") == "true"){
-        saveUploads.checked = 1;
-    }
-    saveUploads.onchange = function(){
-        localStorage.setItem("saveuploads", this.checked);
-    };*/
-    checkboxSettingSetup(null, saveUploads, "saveuploads");
-}catch(e){}
+// try{
+//     var saveUploads = document.getElementById("saveuploads");
+//     /*if(localStorage.getItem("saveuploads") == "true"){
+//         saveUploads.checked = 1;
+//     }
+//     saveUploads.onchange = function(){
+//         localStorage.setItem("saveuploads", this.checked);
+//     };*/
+//     checkboxSettingSetup(null, saveUploads, "saveuploads");
+// }catch(e){}
 try{
     var checkboxSettings = [
+        ["saveuploads", true],
         ["currentlocationmode", false],
         ["locationhighaccuracymode", true],
         ["locationinitializationmode", false],
@@ -444,7 +445,7 @@ try{
                 defaultLang.checked=0;
             }
         }catch(e){}
-        setCheckboxOnstorage(saveUploads, "saveuploads");
+        // setCheckboxOnstorage(saveUploads, "saveuploads");
         try{
             // setLocationSettings();
             setCheckboxSettings();
@@ -517,7 +518,7 @@ try{
             setCookie("lang", "");
             setCookie("settingstimezone", "");
             // localStorage.setItem("saveuploads", true);
-            localStorage.removeItem("saveuploads");
+            // localStorage.removeItem("saveuploads");
             // resetLocationSettings();
             resetCheckboxSettings();
             try{

@@ -539,6 +539,11 @@ function automaticDownload(downloadButton, cameraMode){
         }
     }catch(e){}
 }
+try{
+    if(localStorage.getItem("saveuploads") == null){
+        localStorage.setItem("saveuploads", true);
+    }
+}catch(e){}
 function uploadFile(file, cameraMode, id0, id, key, n0){
     setTimeout(function(){
         var currentUploadID = ++lastUploadID;

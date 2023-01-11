@@ -2346,11 +2346,11 @@ try{
         });
     });
 }catch(e){}
-/*try{
+try{
     if(localStorage.getItem("saveuploads") == null){
         localStorage.setItem("saveuploads", true);
     }
-}catch(e){}*/
+}catch(e){}
 try{
     // var myUploadsButton = document.createElement("button");
     var myUploadsButton = document.getElementById("myUploadsButton");
@@ -2516,7 +2516,7 @@ try{
         myUploadBox.insertBefore(filesUpload, element);
         // if(uploadsData[i][2]){
             var descriptionForm = document.createElement("form");
-            descriptionForm.innerHTML = '<textarea class="writedesciption" rows="2" cols="10" placeholder="'+getString("writedescription")+'..." maxlength="'+maxDescriptionLength+'"></textarea><br><span>0</span> / '+maxDescriptionLength+'<br><button type="submit" class="buttons afteruploadbuttons" disabled><img width="32" height="32" src="/images/description.svg"> <span class="uploaddescription">'+getString("uploaddescription")+'</span></button>';
+            descriptionForm.innerHTML = '<textarea class="writedescription" rows="2" cols="10" placeholder="'+getString("writedescription")+'..." maxlength="'+maxDescriptionLength+'"></textarea><br><span>0</span> / '+maxDescriptionLength+'<br><button type="submit" class="buttons afteruploadbuttons" disabled><img width="32" height="32" src="/images/description.svg"> <span class="uploaddescription">'+getString("uploaddescription")+'</span></button>';
             descriptionForm.children[0].addEventListener("input", function(){
                 this.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.disabled = this.value == '';
                 this.style.height = "0";
@@ -2580,6 +2580,9 @@ try{
                 }else{
                     myUploadsContent.innerText = getString("nodata");
                 }
+                if(!uploadsData.length){
+                    localStorage.removeItem("uploads");
+                }
             }
         };
         myUploadBox.appendChild(clearSingleUpload);
@@ -2608,8 +2611,6 @@ try{
         uploadsData = localStorage.getItem("uploads");
         if(uploadsData){
             uploadsData = JSON.parse(uploadsData);
-        }
-        if(uploadsData && uploadsData.length){
             try{
                 uploadsData.reverse();
             }catch(e){}

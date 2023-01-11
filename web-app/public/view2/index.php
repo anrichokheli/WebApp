@@ -22,7 +22,7 @@
             <div id="loaderror"></div>
             <div class="overlay" id="windowoverlay">
                 <div id="windowtop">
-                    <a href="../" id="icon">
+                    <a href="/app">
                         <img width="32" height="32" src="../images/pedestriansos.svg">
                     </a>
                     <div>
