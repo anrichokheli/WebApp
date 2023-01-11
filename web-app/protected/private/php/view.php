@@ -295,7 +295,7 @@
                     ';
                     $locationPublicPath = "?viewstring&location=" . $row["n"];
                     $locationButtons = "<div class=\"buttonsdivs\">";
-                    $locationButtons .= "<a href=\"" . $locationPublicPath . "\" class=\"buttons\"><img width=\"32\" height=\"32\" src=\"images/newtab.svg\"> <span class=\"open\"><string>open</string></span></a>";
+                    $locationButtons .= "<a href=\"" . $locationPublicPath . "\" class=\"buttons\"><img width=\"32\" height=\"32\" src=\"images/open.svg\"> <span class=\"open\"><string>open</string></span></a>";
                     $locationButtons .= "<a target=\"_blank\" href=\"" . $locationPublicPath . "\" class=\"buttons\"> <img width=\"32\" height=\"32\" src=\"images/newtab.svg\"></a>";
                     $locationButtons .= "<a href=\"" . $locationPublicPath . "\" download=\"" . $mainRow["id"] . "\" class=\"buttons\"><img width=\"32\" height=\"32\" src=\"images/download.svg\"><span class=\"download\"><string>download</string></span></a>";
                     $locationButtons .= "</div>";
@@ -421,7 +421,7 @@
                     }
                     $descriptionPublicPath = "?viewstring&description=" . $row["n"];
                     $descriptionButtons = "<div class=\"buttonsdivs\">";
-                    $descriptionButtons .= "<a href=\"" . $descriptionPublicPath . "\" class=\"buttons\"><img width=\"32\" height=\"32\" src=\"images/newtab.svg\"> <span class=\"open\"><string>open</string></span></a>";
+                    $descriptionButtons .= "<a href=\"" . $descriptionPublicPath . "\" class=\"buttons\"><img width=\"32\" height=\"32\" src=\"images/open.svg\"> <span class=\"open\"><string>open</string></span></a>";
                     $descriptionButtons .= "<a target=\"_blank\" href=\"" . $descriptionPublicPath . "\" class=\"buttons\"> <img width=\"32\" height=\"32\" src=\"images/newtab.svg\"></a>";
                     $descriptionButtons .= "<a href=\"" . $descriptionPublicPath . "\" download=\"" . $mainRow["id"] . "\" class=\"buttons\"><img width=\"32\" height=\"32\" src=\"images/download.svg\"><span class=\"download\"><string>download</string></span></a>";
                     $descriptionButtons .= "</div>";
