@@ -13,12 +13,12 @@
         define("uploadSecretsPath", secretPath . "uploads/");
         define("idsPath", uploadSecretsPath . "ids/");
         define("keysPath", uploadSecretsPath . "keys/");
+        function getID(){
+            $t = microtime();
+            $t = explode(" ", $t);
+            return $t[1] . substr($t[0], 2, -2);
+        }
         if(isset($_GET["setup"]) && $_GET["setup"] == "1"){
-            function getID(){
-                $t = microtime();
-                $t = explode(" ", $t);
-                return $t[1] . substr($t[0], 2, -2);
-            }
             function getKey($n)   {
                 $key = "";
                 for($i = 0; $i < $n; $i++)   {
@@ -132,6 +132,9 @@
                 // if(!file_exists($chunkFilePath)){
                 //     move_uploaded_file($_FILES["chunk"]["tmp_name"], $chunkFilePath);
                 // }
+                if(file_exists($chunkFilePath)){
+                    $chunkFilePath = substr($chunkFilePath, 0, -5) . "_" . getID() . "a.webm";
+                }
                 if(move_uploaded_file($_FILES["chunk"]["tmp_name"], $chunkFilePath)){
                     echo "1";
                 }else{
