@@ -818,7 +818,6 @@ function onVideoStop(live){
         // liveN_2 = null;
         // liveID_2 = null;
         // liveKey_2 = null;
-        chunk_n = 0;
     }
     clearInterval(recordDurationInterval);
     recordDurationInterval = null;
@@ -1282,6 +1281,7 @@ try{
             liveN_2 = responseArray[3];
             liveID_2 = responseArray[4];
             liveKey_2 = responseArray[5];
+            chunk_n = 0;
             if(!liveStartupOfflineRecording){
                 videoSetup(true);
             }else{
@@ -1418,7 +1418,7 @@ try{
                 sendLiveChunk(new Blob([chunk], {type: "video/webm"}), 1);
             };
             retryButton.classList.add("buttons");
-            addStatus("video", "video", "ff0000", "#" + liveN_2 + "<br>" + ajax.Error, retryButton);
+            addStatus("video", "video", "ff0000", "#" + liveN_2 + "<br>" + ajax.Error + "<br>" + ajax.response, retryButton);
             var onlineFunc = function(){window.removeEventListener("online", onlineFunc);sendLiveChunk(new Blob([chunk], {type: "video/webm"}), 1);};
             window.addEventListener("online", onlineFunc);
         },0);
